@@ -6,6 +6,7 @@ import numpy as np
 import math
 
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5 import uic
 from numpy.random import choice as np_choice
 
 # Импорт pygame
@@ -17,19 +18,8 @@ import sys
 IMAGE_DIR = 'source/images'
 DURATION = 60
 
-
-# функция для считывания входящих данных
-def read_input():
-    data = []
-    while True:
-        word = input()
-        if word == '':
-            break
-        line = word.strip().split()
-        data.append(line)
-    matrix = np.array(data, float)
-    print('Матрица расстояний создана')
-    return matrix
+from PyQt5 import QtCore, QtGui, QtWidgets
+import numpy as np
 
 
 def write_text(pos, text, screen, color=(0, 0, 0), centered=False):
@@ -62,156 +52,26 @@ def load_image(name, colorkey=None):
     return image
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-import numpy as np
-
-
 class Ui_interface(QtWidgets.QMainWindow):
     def __init__(self, game):
         super(Ui_interface, self).__init__()
-        self.setupUi()
+        # self.setupUi()
+        self.setUi()
         self.init_pygame(game)
         self.is_pause = False
         self.cur_iter = 0
         self.setup_buttons()
+        self.play_icon = QtGui.QIcon()
+        self.play_icon.addPixmap(QtGui.QPixmap(os.path.join(IMAGE_DIR, "play.png")),
+                                 QtGui.QIcon.Normal,
+                                 QtGui.QIcon.Off)
+        self.pause_icon = QtGui.QIcon()
+        self.pause_icon.addPixmap(QtGui.QPixmap(os.path.join(IMAGE_DIR, "pause.png")),
+                                  QtGui.QIcon.Normal,
+                                  QtGui.QIcon.Off)
 
-    def setupUi(self):
-        interface = self
-        interface.setObjectName("interface")
-        interface.resize(404, 300)
-        interface.setObjectName("interface")
-        interface.resize(404, 336)
-        self.centralwidget = QtWidgets.QWidget(interface)
-        self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName("gridLayout")
-        self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
-        self.tableWidget.setRowCount(6)
-        self.tableWidget.setColumnCount(6)
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget.horizontalHeader().setDefaultSectionSize(39)
-        self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 1)
-        self.animation_manager = QtWidgets.QWidget(self.centralwidget)
-        self.animation_manager.setEnabled(False)
-        self.animation_manager.setObjectName("animation_manager")
-        self.gridLayout_2 = QtWidgets.QGridLayout(self.animation_manager)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.play = QtWidgets.QPushButton(self.animation_manager)
-        self.play.setText("")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(os.path.join(IMAGE_DIR, "play-button.png")), QtGui.QIcon.Normal,
-                       QtGui.QIcon.Off)
-        self.play.setIcon(icon)
-        self.play.setIconSize(QtCore.QSize(32, 32))
-        self.play.setAutoDefault(False)
-        self.play.setDefault(False)
-        self.play.setFlat(True)
-        self.play.setObjectName("play")
-        self.gridLayout_2.addWidget(self.play, 0, 2, 1, 1)
-        self.prev = QtWidgets.QPushButton(self.animation_manager)
-        self.prev.setText("")
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(os.path.join(IMAGE_DIR, "prev.png")), QtGui.QIcon.Normal,
-                        QtGui.QIcon.Off)
-        self.prev.setIcon(icon1)
-        self.prev.setIconSize(QtCore.QSize(32, 32))
-        self.prev.setFlat(True)
-        self.prev.setObjectName("prev")
-        self.gridLayout_2.addWidget(self.prev, 0, 0, 1, 1)
-        self.pause = QtWidgets.QPushButton(self.animation_manager)
-        self.pause.setText("")
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(os.path.join(IMAGE_DIR, "pause.png")), QtGui.QIcon.Normal,
-                        QtGui.QIcon.Off)
-        self.pause.setIcon(icon2)
-        self.pause.setIconSize(QtCore.QSize(32, 32))
-        self.pause.setFlat(True)
-        self.pause.setObjectName("pause")
-        self.gridLayout_2.addWidget(self.pause, 0, 1, 1, 1)
-        self.next = QtWidgets.QPushButton(self.animation_manager)
-        self.next.setText("")
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(os.path.join(IMAGE_DIR, "next.png")), QtGui.QIcon.Normal,
-                        QtGui.QIcon.Off)
-        self.next.setIcon(icon3)
-        self.next.setIconSize(QtCore.QSize(32, 32))
-        self.next.setFlat(True)
-        self.next.setObjectName("next")
-        self.gridLayout_2.addWidget(self.next, 0, 3, 1, 1)
-        self.cadre_label = QtWidgets.QLabel(self.animation_manager)
-        self.cadre_label.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.cadre_label.setAlignment(
-            QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
-        self.cadre_label.setObjectName("cadre_label")
-        self.gridLayout_2.addWidget(self.cadre_label, 1, 1, 1, 1)
-        self.cadre_box = QtWidgets.QSpinBox(self.animation_manager)
-        self.cadre_box.setMaximum(0)
-        self.cadre_box.setObjectName("cadre_box")
-        self.gridLayout_2.addWidget(self.cadre_box, 1, 2, 1, 1)
-        self.gridLayout.addWidget(self.animation_manager, 2, 0, 1, 2)
-        self.formLayout = QtWidgets.QFormLayout()
-        self.formLayout.setObjectName("formLayout")
-        self.alpha_label = QtWidgets.QLabel(self.centralwidget)
-        self.alpha_label.setObjectName("alpha_label")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.alpha_label)
-        self.beta_label = QtWidgets.QLabel(self.centralwidget)
-        self.beta_label.setObjectName("beta_label")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.beta_label)
-        self.decay_label = QtWidgets.QLabel(self.centralwidget)
-        self.decay_label.setObjectName("decay_label")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.decay_label)
-        self.best_label = QtWidgets.QLabel(self.centralwidget)
-        self.best_label.setObjectName("best_label")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.best_label)
-        self.alpha_box = QtWidgets.QDoubleSpinBox(self.centralwidget)
-        self.alpha_box.setMaximum(1.0)
-        self.alpha_box.setSingleStep(0.05)
-        self.alpha_box.setProperty("value", 1.0)
-        self.alpha_box.setObjectName("alpha_box")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.alpha_box)
-        self.beta_box = QtWidgets.QDoubleSpinBox(self.centralwidget)
-        self.beta_box.setSingleStep(0.05)
-        self.beta_box.setProperty("value", 1.0)
-        self.beta_box.setObjectName("beta_box")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.beta_box)
-        self.decay_box = QtWidgets.QDoubleSpinBox(self.centralwidget)
-        self.decay_box.setMaximum(1.0)
-        self.decay_box.setSingleStep(0.05)
-        self.decay_box.setProperty("value", 0.9)
-        self.decay_box.setObjectName("decay_box")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.decay_box)
-        self.best_box = QtWidgets.QSpinBox(self.centralwidget)
-        self.best_box.setMaximum(10)
-        self.best_box.setProperty("value", 5)
-        self.best_box.setObjectName("best_box")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.best_box)
-        self.gridLayout.addLayout(self.formLayout, 0, 1, 1, 1)
-        self.start = QtWidgets.QPushButton(self.centralwidget)
-        self.start.setObjectName("start")
-        self.gridLayout.addWidget(self.start, 1, 0, 1, 2)
-        interface.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(interface)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 404, 21))
-        self.menubar.setObjectName("menubar")
-        interface.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(interface)
-        self.statusbar.setObjectName("statusbar")
-        interface.setStatusBar(self.statusbar)
-        self.duration_label = QtWidgets.QLabel(self.animation_manager)
-        self.duration_label.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.duration_label.setAlignment(
-            QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
-        self.duration_label.setObjectName("duration_label")
-        self.gridLayout_2.addWidget(self.duration_label, 2, 0, 1, 2)
-        self.duration_box = QtWidgets.QSpinBox(self.animation_manager)
-        self.duration_box.setMaximum(100)
-        self.duration_box.setObjectName("duration_box")
-        self.gridLayout_2.addWidget(self.duration_box, 2, 2, 1, 1)
-
-        self.retranslateUi(interface)
-        QtCore.QMetaObject.connectSlotsByName(interface)
-
-        self.is_ready = False
+    def setUi(self):
+        uic.loadUi('source/ui/form.ui', self)
 
     def init_pygame(self, game):
         self.game = game
@@ -227,7 +87,7 @@ class Ui_interface(QtWidgets.QMainWindow):
 
     def retranslateUi(self, interface):
         _translate = QtCore.QCoreApplication.translate
-        interface.setWindowTitle(_translate("interface", "interface"))
+        interface.setWindowTitle(_translate("Ant interface", "Ant interface"))
         self.cadre_label.setText(_translate("interface", "Текущий кадр:"))
         self.duration_label.setText(_translate("interface", "Продолжительность анимации:"))
         self.alpha_label.setText(_translate("interface", "alpha"))
@@ -238,18 +98,18 @@ class Ui_interface(QtWidgets.QMainWindow):
 
     def setup_buttons(self):
         self.start.clicked.connect(self.start_animation)
-        self.pause.clicked.connect(self.set_pause)
-        self.play.clicked.connect(self.disable_pause)
+        self.play.clicked.connect(self.switch_pause)
         self.next.clicked.connect(self.next_iter)
         self.prev.clicked.connect(self.prev_iter)
         self.cadre_box.valueChanged.connect(self.change_cadre)
         self.duration_box.valueChanged.connect(self.change_duration)
 
-    def set_pause(self):
-        self.is_pause = True
-
-    def disable_pause(self):
-        self.is_pause = False
+    def switch_pause(self):
+        self.is_pause = not self.is_pause
+        if self.is_pause:
+            self.play.setIcon(self.play_icon)
+        else:
+            self.play.setIcon(self.pause_icon)
 
     def next_iter(self):
         if self.game.cur_iter + 1 <= self.game.n_iterations:
@@ -292,11 +152,13 @@ class Ui_interface(QtWidgets.QMainWindow):
                     item_val = int(item.text())
                     if row == column:
                         if item_val != 0:
-                            raise ValueError(
+                            raise Exception(
                                 'Расстояние города между собой должно быть равно нулю')
                     distance[row].append(item_val)
             distance = [i for i in distance if i]
             vals_dicty['distances'] = np.array(distance, float)
+            if len(vals_dicty['distances']) == 1:
+                raise Exception('Матрица должна состоять как минимум из двух городов')
             vals_dicty['n_ants'] = len(distance) * 2
             vals_dicty['n_iterations'] = len(distance) * 4
 
@@ -304,14 +166,16 @@ class Ui_interface(QtWidgets.QMainWindow):
             self.animation_manager.setEnabled(True)
             self.cadre_box.setMaximum(self.game.n_inds * DURATION)
             self.duration_box.setValue(DURATION)
+        except ValueError as e:
+            self.warning_label.setText('Неправильный формат ячеек')
         except Exception as e:
-            raise e
+            self.warning_label.setText(e.__str__())
 
 
 class Ant(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = load_image('ant.png', colorkey=-1)
+        self.image = load_image('ant.png', colorkey=0)
         self.rect = self.image.get_rect()
         self.text_pos = 46, 25
 
@@ -344,6 +208,12 @@ class CitiesNet:
                     color = (min(255, pherm_intencity * 255), 0, 0)
                     pygame.draw.line(self.screen, color, self.coords[y], self.coords[x], 10)
 
+                    # рисование длины между тропинок
+                    distance = self.distances[y][x]
+                    distance_pos = ((self.coords[y][0] + self.coords[x][0]) // 2,
+                                    (self.coords[y][1] + self.coords[x][1]) // 2)
+                    write_text(distance_pos, str(distance), self.screen, centered=True)
+
         # нумерация города
         list_of_coords = [self.coords[i] for i in range(len(self.coords))]
         for i in range(len(list_of_coords)):
@@ -361,10 +231,7 @@ class CitiesNet:
 
             current_inds = [sorted_all_paths[i][0][current_path_index] for i in
                             range(len(sorted_all_paths))]
-            print(timer, current_path_index, coef, DURATION * self.n_inds)
-            print(current_inds)
 
-            print('-' * 5)
             for ind in current_inds:
                 first_ind, second_ind = self.coords[ind[0]], self.coords[ind[1]]
                 if second_ind[0] > first_ind[0]:
@@ -392,12 +259,13 @@ class CitiesNet:
         self.n_ants = ant_colony.n_ants
         self.distances = ant_colony.distances
         self.coords = dict()
+        self.shortest_path = shortest_path
 
         center = self.screen.get_width() // 2, self.screen.get_height() // 2
         height = 160
 
         # нахождение основных городов
-        angle = ((self.n_inds - 2) / self.n_inds) * 180
+        angle = 180 - (((self.n_inds - 2) / self.n_inds) * 180)
         const_rad_angle = rad_angle = angle * (math.pi / 180)
         self.coords[0] = center[0], center[1] - height
         for ind in range(1, self.n_inds):
@@ -408,13 +276,6 @@ class CitiesNet:
 
             rad_angle += const_rad_angle
             self.coords[ind] = x1, y1
-
-        # нахождение дорог между городами
-        self.trips = []
-        for y in range(len(self.distances)):
-            for x in range(len(self.distances[0])):
-                if self.distances[y][x] != np.inf:
-                    self.trips.append((y, x))
 
         self.is_ready = True
 
@@ -428,7 +289,14 @@ class CitiesNet:
             self.screen.fill('White')
 
             if self.cur_iter >= self.n_iterations:
-                write_text((self.screen.get_width() // 2, 500), "Анимация закончилась", self.screen,
+                write_text((self.screen.get_width() // 2, 50), "Анимация закончилась", self.screen,
+                           centered=True)
+                path = '; '.join([f'{i[0] + 1}->{i[1] + 1}' for i in self.shortest_path[0]])
+                write_text((self.screen.get_width() // 2, 500),
+                           f"Короткий путь: {path}",
+                           self.screen, centered=True)
+                write_text((self.screen.get_width() // 2, 550),
+                           f"Длина короткого пути: {self.shortest_path[1]}", self.screen,
                            centered=True)
             elif self.timer == self.n_inds * DURATION and self.cur_iter < self.n_iterations:
                 self.timer = 0
@@ -446,20 +314,6 @@ class CitiesNet:
 
 
 class AntColony(object):
-    """
-    Находит кротчайший путь для решения задачи коммивояжера.
-
-    Attributes
-    ----------
-    distances : np.array
-    Матрица расстояний вида
-      1  2  3  -  список городов
-    1 0  x  y  -  расстояния от города до другого города. Между собой город не имеет расстояний
-    2 x  0  z
-    3 y  z  0
-
-    """
-
     def __init__(self, distances, n_ants, n_best, n_iterations, decay, alpha=1, beta=1):
         # избавляемся от нулей в матрице
         i = 0
@@ -485,17 +339,6 @@ class AntColony(object):
         self.beta = beta
 
     def run(self, debug=False):
-        """
-        Функция возвращает короткий путь. На каждой итерации расчитывается список всех путей и распро
-        страняется феромон в зависимости от условий. В конце итерации феромон испаряется по параметру
-        decay.
-
-        Parameters
-        ----------
-        debug : bool
-            включение отладки в консоль
-        """
-
         conditions_of_ant_colony = []
         conditions_of_ant_colony.append({'all_paths': None,
                                          'pheromone': np.copy(self.pheromone)})
@@ -515,47 +358,18 @@ class AntColony(object):
         return all_time_shortest_path, conditions_of_ant_colony
 
     def spread_pheronome(self, all_paths, n_best, shortest_path):
-        """
-
-        Parameters
-        ----------
-        :param all_paths: list
-            список всех путей в виде кортежей
-        :param n_best: int
-            количество элитных муравьев
-        :param shortest_path: tuple(int)
-            самый короткий путь
-        :return: None
-        """
-
         sorted_paths = sorted(all_paths, key=lambda x: x[1])
         for path, dist in sorted_paths[:n_best]:
             for move in path:
                 self.pheromone[move] += 1.0 / self.distances[move]
 
     def gen_path_dist(self, path):
-        """
-        Считает роасстояние для пути из городов
-
-        :param path: tuple(int)
-            путь
-        :return: total_dist : int
-            общее расстояние для пути
-        """
-
         total_dist = 0
         for ele in path:
             total_dist += self.distances[ele]
         return total_dist
 
     def gen_all_paths(self):
-        """
-        Генерериует список всех путей
-
-        :return: list(tuple)
-            список всех путей
-        """
-
         all_paths = []
         for ant in range(self.n_ants):
             path = self.gen_path(0)
@@ -563,15 +377,6 @@ class AntColony(object):
         return all_paths
 
     def gen_path(self, start):
-        """
-        Генерирует путь с города start
-
-        :param start: int
-            Город, с которого начинается путь
-        :return: list(int)
-            Путь-список, состоящий из посещенных городов
-        """
-
         path = []
         visited = set()
         visited.add(start)
@@ -585,20 +390,6 @@ class AntColony(object):
         return path
 
     def pick_move(self, pheromone, dist, visited):
-        """
-        Выбирает город, в который пойдет муравей. На выбор влияет интенсивность феромона для узла
-        городов
-
-        :param pheromone: np.array([x, y, z])
-            срез по иксу матрицы феромонов
-        :param dist: int
-            Длина пути
-        :param visited:
-            Табу или список запрещенных городов. Интенсивность феромонов для табу равна нулю, чтобы
-            муравей не вернулся обратно
-        :return: int
-            Номер выбранного города
-        """
 
         pheromone = np.copy(pheromone)
         pheromone[list(visited)] = 0  # посещенные города не должны посещаться снова
