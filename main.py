@@ -1,5 +1,3 @@
-from itertools import groupby
-
 # Импорт математики
 import random as rn
 import numpy as np
@@ -15,11 +13,11 @@ import pygame
 import os
 import sys
 
-IMAGE_DIR = 'source/images'
-DURATION = 60
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 import numpy as np
+
+IMAGE_DIR = 'source/images'
+DURATION = 60
 
 
 def write_text(pos, text, screen, color=(0, 0, 0), centered=False):
@@ -55,8 +53,8 @@ def load_image(name, colorkey=None):
 class Ui_interface(QtWidgets.QMainWindow):
     def __init__(self, game):
         super(Ui_interface, self).__init__()
-        # self.setupUi()
         self.setUi()
+        self.setWindowIcon(QtGui.QIcon('ant.ico'))
         self.init_pygame(game)
         self.is_pause = False
         self.cur_iter = 0
@@ -175,7 +173,7 @@ class Ui_interface(QtWidgets.QMainWindow):
 class Ant(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = load_image('ant.png', colorkey=0)
+        self.image = load_image('ant.png', 0)
         self.rect = self.image.get_rect()
         self.text_pos = 46, 25
 
@@ -194,6 +192,8 @@ class CitiesNet:
         self.is_ready = False
         pygame.init()
         pygame.display.set_caption('Ant algorithm')
+        ant_icon = pygame.image.load('ant_icon.png')
+        pygame.display.set_icon(ant_icon)
         self.WIDTH, self.HEIGHT = self.SIZE = 800, 600
         self.screen = pygame.display.set_mode(self.SIZE)
         self.fps = 30
@@ -210,9 +210,15 @@ class CitiesNet:
 
                     # рисование длины между тропинок
                     distance = self.distances[y][x]
-                    distance_pos = ((self.coords[y][0] + self.coords[x][0]) // 2,
+
+                    distance_pos = (((self.coords[y][0] + self.coords[x][0]) // 2),
                                     (self.coords[y][1] + self.coords[x][1]) // 2)
-                    write_text(distance_pos, str(distance), self.screen, centered=True)
+
+                    if self.n_inds == 4 and x in (0, 2) and y in (2, 0):
+                        distance_pos = (distance_pos[0], distance_pos[1] + 50)
+
+                    write_text(distance_pos, str(distance), self.screen, centered=True,
+                               color=(0, 0, 255))
 
         # нумерация города
         list_of_coords = [self.coords[i] for i in range(len(self.coords))]
@@ -346,7 +352,7 @@ class AntColony(object):
         all_time_shortest_path = ("placeholder", np.inf)
         for i in range(self.n_iterations):
             all_paths = self.gen_all_paths()
-            self.spread_pheronome(all_paths, self.n_best_ants, shortest_path=shortest_path)
+            self.spread_pheronome(all_paths, self.n_best_ants)
             shortest_path = min(all_paths, key=lambda x: x[1])
             if shortest_path[1] < all_time_shortest_path[1]:
                 all_time_shortest_path = shortest_path
@@ -357,7 +363,7 @@ class AntColony(object):
                                              'pheromone': np.copy(self.pheromone)})
         return all_time_shortest_path, conditions_of_ant_colony
 
-    def spread_pheronome(self, all_paths, n_best, shortest_path):
+    def spread_pheronome(self, all_paths, n_best):
         sorted_paths = sorted(all_paths, key=lambda x: x[1])
         for path, dist in sorted_paths[:n_best]:
             for move in path:
@@ -390,22 +396,12 @@ class AntColony(object):
         return path
 
     def pick_move(self, pheromone, dist, visited):
-
         pheromone = np.copy(pheromone)
         pheromone[list(visited)] = 0  # посещенные города не должны посещаться снова
         row = pheromone ** self.alpha * ((1.0 / dist) ** self.beta)
         norm_row = row / row.sum()
         move = np_choice(self.all_inds, 1, p=norm_row)[0]
         return move
-
-    def __str__(self):
-        return f"Матрица расстояний: \n{self.distances}\n" \
-               f"Матрица феромонов: \n{self.pheromone}\n" \
-               f"Список городов: {self.all_inds}\n" \
-               f"Кол-во муравьев/эл. муравьев: {self.n_ants, self.n_best_ants}\n" \
-               f"Кол-во итераций: {self.n_iterations}\n" \
-               f"Испарение феромона: {self.decay}\n" \
-               f"Альфа и бета: {self.alpha, self.beta}"
 
     def debug_condition(self, n_iteration):
         print(f'------Шаг-{n_iteration + 1}.')
