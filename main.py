@@ -204,8 +204,10 @@ class CitiesNet:
         for y in range(len(self.distances)):
             for x in range(len(self.distances[0])):
                 if self.distances[y][x] != np.inf:
-                    pherm_intencity = self.conditions_of_ant_colony[self.cur_iter]['pheromone'][y][x]
-                    color = (min(255, pherm_intencity * 255), 0, 0)
+                    pherm_intencity1 = self.conditions_of_ant_colony[self.cur_iter]['pheromone'][y][x]
+                    pherm_intencity2 = self.conditions_of_ant_colony[self.cur_iter]['pheromone'][x][y]
+                    color = max(((min(255, pherm_intencity1 * 50), 0, 0),
+                                 (min(255, pherm_intencity2 * 50), 0, 0)))
                     pygame.draw.line(self.screen, color, self.coords[y], self.coords[x], 10)
 
                     # рисование длины между тропинок
@@ -253,7 +255,6 @@ class CitiesNet:
 
     def game_init(self, values):
         ant_colony = AntColony(**values)
-        print(ant_colony)
         shortest_path, conditions_of_ant_colony = ant_colony.run()
         print(f"Кратчайший путь: {shortest_path}")
 
